@@ -19,8 +19,37 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
     var recordedAudio:RecordedAudio!
     var shouldSegueToSoundPlayer = false
     
+    func audioFileURL() ->  NSURL {
+        let filename = "usersVoice.wav"
+        let dirPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] 
+        let pathArray = [dirPath, filename]
+        let fileURL =  NSURL.fileURLWithPathComponents(pathArray)!
+        
+        return fileURL
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        if NSFileManager.defaultManager().fileExistsAtPath(audioFileURL().path!) {
+            
+            print("The file already exists!")
+            
+            let alert = UIAlertController(title: "Sounds file already exists", message: "Do you wish to record a new one?", preferredStyle: UIAlertControllerStyle.Alert)
+            alert.addAction(UIAlertAction(title: "No", style: UIAlertActionStyle.Default, handler: {(action: UIAlertAction!) in self.goToPlay()}))
+            alert.addAction(UIAlertAction(title: "Yes", style: UIAlertActionStyle.Default, handler: nil))
+            self.presentViewController(alert, animated: true, completion: nil)
+            
+            
+        }
+        
+    }
+    
+    func goToPlay() {
+        
+        recordedAudio = RecordedAudio(filePathUrl: audioFileURL(), title: audioFileURL().lastPathComponent)
+        self.performSegueWithIdentifier("stopRecording", sender: self)
+        
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -43,10 +72,7 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
         }
         
         // Create the path to the file.
-        let filename = "usersVoice.wav"
-        let dirPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0] as String
-        let pathArray = [dirPath, filename]
-        let fileURL =  NSURL.fileURLWithPathComponents(pathArray)!
+        let fileURL =  audioFileURL()
 
         // Initialize and prepare the recorder
         do {
